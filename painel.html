@@ -1,0 +1,449 @@
+{% extends 'base.html' %}
+
+{% block titulo %}
+  Painel do bibliotecário
+{% endblock %}
+
+{% block conteudo %}
+
+<section class="page-heading">
+
+  <div>
+
+    <span class="eyebrow">
+      ÁREA DO BIBLIOTECÁRIO
+    </span>
+
+    <h1>
+      A biblioteca em movimento.
+    </h1>
+
+    <p>
+      Organize as retiradas e acompanhe cada empréstimo.
+    </p>
+
+  </div>
+
+
+  <a
+    class="button"
+    href="{% url 'acervo' %}"
+  >
+    Gerenciar acervo ↗
+  </a>
+
+</section>
+
+
+<div class="stats">
+
+  <a href="?aba=pendentes">
+
+    <span>
+      Pedidos pendentes
+    </span>
+
+    <strong>
+      {{ pendentes }}
+    </strong>
+
+    <small>
+      Aguardando sua análise →
+    </small>
+
+  </a>
+
+
+  <a href="?aba=retiradas">
+
+    <span>
+      Para retirar
+    </span>
+
+    <strong>
+      {{ retiradas }}
+    </strong>
+
+    <small>
+      Exemplares reservados →
+    </small>
+
+  </a>
+
+
+  <a href="?aba=emprestimos">
+
+    <span>
+      Em empréstimo
+    </span>
+
+    <strong>
+      {{ ativos }}
+    </strong>
+
+    <small>
+      Leituras em andamento →
+    </small>
+
+  </a>
+
+
+  <a
+    href="?aba=emprestimos&atrasados=1"
+    class="warning-stat"
+  >
+
+    <span>
+      Em atraso
+    </span>
+
+    <strong>
+      {{ atrasados }}
+    </strong>
+
+    <small>
+      Devolução pendente →
+    </small>
+
+  </a>
+
+</div>
+
+
+<nav
+  class="tabs"
+  aria-label="Etapas dos empréstimos"
+>
+
+  <a
+    class="{% if aba == 'pendentes' %}selected{% endif %}"
+    href="?aba=pendentes"
+  >
+    Solicitações
+  </a>
+
+  <a
+    class="{% if aba == 'retiradas' %}selected{% endif %}"
+    href="?aba=retiradas"
+  >
+    Retiradas
+  </a>
+
+  <a
+    class="{% if aba == 'emprestimos' %}selected{% endif %}"
+    href="?aba=emprestimos"
+  >
+    Empréstimos
+  </a>
+
+  <a
+    class="{% if aba == 'historico' %}selected{% endif %}"
+    href="?aba=historico"
+  >
+    Histórico
+  </a>
+
+</nav>
+
+
+{% if request.GET.atrasados %}
+
+  <p class="filter-note">
+
+    Mostrando apenas empréstimos atrasados.
+
+    <a href="?aba=emprestimos">
+      Ver todos
+    </a>
+
+  </p>
+
+{% endif %}
+
+
+<div class="request-list">
+
+  {% for registro in registros %}
+
+    <article class="request-card">
+
+      {% if aba == 'emprestimos' %}
+
+        <div class="request-main">
+
+          <span class="badge {% if registro.atrasado %}late{% endif %}">
+
+            {% if registro.atrasado %}
+              Em atraso
+            {% else %}
+              Em empréstimo
+            {% endif %}
+
+          </span>
+
+
+          <h2>
+            {{ registro.exemplar.livro.nome }}
+          </h2>
+
+
+          <p>
+            {{ registro.leitor.first_name }}
+            ·
+            {{ registro.leitor.email }}
+          </p>
+
+
+          <small>
+            Exemplar {{ registro.exemplar.codigo }}
+            ·
+            Retirada {{ registro.retirada_em|date:"d/m/Y" }}
+          </small>
+
+        </div>
+
+
+        <div class="request-status">
+
+          <h3>
+            Devolver até
+            {{ registro.prazo|date:"d/m/Y" }}
+          </h3>
+
+          <form
+            method="post"
+            action="{% url 'devolver' registro.pk %}"
+          >
+
+            {% csrf_token %}
+
+            <button
+              class="button secondary"
+              type="submit"
+            >
+              Confirmar devolução
+            </button>
+
+          </form>
+
+        </div>
+
+
+      {% else %}
+
+
+        <div class="request-main">
+
+          <span class="badge status-{{ registro.status }}">
+            {{ registro.get_status_display }}
+          </span>
+
+
+          <h2>
+            {{ registro.livro.nome }}
+          </h2>
+
+
+          <p>
+            {{ registro.leitor.first_name }}
+            ·
+            {{ registro.leitor.email }}
+          </p>
+
+
+          <small>
+
+            Pedido #{{ registro.pk }}
+
+            ·
+
+            {{ registro.criada_em|date:"d/m/Y H:i" }}
+
+            {% if registro.exemplar %}
+              · {{ registro.exemplar.codigo }}
+            {% endif %}
+
+          </small>
+
+
+          {% if registro.motivo %}
+
+            <p>
+              {{ registro.motivo }}
+            </p>
+
+          {% endif %}
+
+
+          {% if registro.status == 'finalizada' %}
+
+            <p>
+              Devolvido em
+              {{ registro.emprestimo.devolvido_em|date:"d/m/Y H:i" }}
+            </p>
+
+          {% endif %}
+
+        </div>
+
+
+        <div class="request-status">
+
+
+          {% if aba == 'pendentes' %}
+
+            <form
+              method="post"
+              action="{% url 'aprovar' registro.pk %}"
+            >
+
+              {% csrf_token %}
+
+              <button
+                class="button"
+                type="submit"
+              >
+                Aprovar e reservar
+              </button>
+
+            </form>
+
+
+            <details>
+
+              <summary>
+                Recusar pedido
+              </summary>
+
+              <form
+                method="post"
+                action="{% url 'recusar' registro.pk %}"
+                class="stack"
+              >
+
+                {% csrf_token %}
+
+                <label for="motivo-{{ registro.pk }}">
+                  Motivo da recusa
+                </label>
+
+                <input
+                  id="motivo-{{ registro.pk }}"
+                  name="motivo"
+                  maxlength="250"
+                  required
+                >
+
+                <button
+                  class="button secondary"
+                  type="submit"
+                >
+                  Confirmar recusa
+                </button>
+
+              </form>
+
+            </details>
+
+
+          {% elif aba == 'retiradas' %}
+
+            <form
+              method="post"
+              action="{% url 'retirar' registro.pk %}"
+              class="stack"
+            >
+
+              {% csrf_token %}
+
+              <label for="prazo-{{ registro.pk }}">
+                Prazo de devolução
+              </label>
+
+              <input
+                id="prazo-{{ registro.pk }}"
+                type="date"
+                name="prazo"
+                value="{{ prazo_padrao }}"
+                required
+              >
+
+              <button
+                class="button"
+                type="submit"
+              >
+                Confirmar retirada
+              </button>
+
+            </form>
+
+          {% endif %}
+
+        </div>
+
+      {% endif %}
+
+    </article>
+
+  {% empty %}
+
+
+    <div class="empty">
+
+      <span class="empty-icon">
+        ✓
+      </span>
+
+      <h2>
+        Tudo em dia por aqui.
+      </h2>
+
+      <p>
+        Nenhum registro nesta etapa.
+      </p>
+
+    </div>
+
+
+  {% endfor %}
+
+</div>
+
+
+{% if registros.has_other_pages %}
+
+<nav class="pagination" aria-label="Paginação">
+
+  {% if registros.has_previous %}
+
+    <a
+      href="?aba={{ aba }}&atrasados={{ request.GET.atrasados }}&page={{ registros.previous_page_number }}"
+    >
+      ← Anterior
+    </a>
+
+  {% endif %}
+
+
+  <span>
+    Página {{ registros.number }}
+    de
+    {{ registros.paginator.num_pages }}
+  </span>
+
+
+  {% if registros.has_next %}
+
+    <a
+      href="?aba={{ aba }}&atrasados={{ request.GET.atrasados }}&page={{ registros.next_page_number }}"
+    >
+      Próxima →
+    </a>
+
+  {% endif %}
+
+</nav>
+
+{% endif %}
+
+{% endblock %}

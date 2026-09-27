@@ -1,0 +1,300 @@
+{% extends 'base.html' %}
+
+{% block titulo %}
+  {{ livro.nome }}
+{% endblock %}
+
+{% block conteudo %}
+
+<a class="back-link" href="{% url 'catalogo' %}">
+  ← Voltar ao acervo
+</a>
+
+
+<section class="detail-layout">
+
+  <div
+    class="cover cover-a detail-cover"
+    aria-hidden="true"
+  >
+
+    <span>
+      {{ livro.categoria.nome }}
+    </span>
+
+    <strong>
+      {{ livro.nome }}
+    </strong>
+
+    <small>
+      {{ livro.autor }}
+    </small>
+
+    <i>
+      Biblioteca / Acervo
+    </i>
+
+  </div>
+
+
+  <div class="detail-copy">
+
+    <span class="eyebrow">
+      {{ livro.categoria.nome }}
+    </span>
+
+    <h1>
+      {{ livro.nome }}
+    </h1>
+
+
+    <p class="author">
+
+      {{ livro.autor }}
+
+      {% if livro.co_autor %}
+        · {{ livro.co_autor }}
+      {% endif %}
+
+    </p>
+
+
+    {% if not livro.ativo %}
+
+      <p class="badge neutral">
+        Fora do catálogo
+      </p>
+
+    {% endif %}
+
+
+    <div class="synopsis">
+
+      {{ livro.sinopse|default:"Este título está disponível para consulta no acervo da biblioteca."|linebreaks }}
+
+    </div>
+
+
+    <div class="request-box">
+
+      {% if pedido %}
+
+        <span class="badge">
+          {{ pedido.get_status_display }}
+        </span>
+
+        <p>
+          Você já tem uma solicitação ou um empréstimo ativo deste livro.
+        </p>
+
+        <a
+          class="button secondary"
+          href="{% url 'meus_emprestimos' %}"
+        >
+          Acompanhar pedido
+        </a>
+
+
+      {% elif disponiveis and livro.ativo %}
+
+        <span class="badge available">
+          Disponível para solicitar
+        </span>
+
+        <p>
+          O pedido será analisado pela biblioteca.
+          Após a aprovação, retire seu exemplar pessoalmente.
+        </p>
+
+        <form
+          method="post"
+          action="{% url 'solicitar' livro.pk %}"
+        >
+
+          {% csrf_token %}
+
+          <button class="button" type="submit">
+            Solicitar empréstimo →
+          </button>
+
+        </form>
+
+
+      {% else %}
+
+        <span class="badge neutral">
+          Indisponível no momento
+        </span>
+
+        <p>
+          Consulte o acervo novamente para verificar a disponibilidade.
+        </p>
+
+      {% endif %}
+
+    </div>
+
+
+    {% if perms.livro.change_livro %}
+
+      <p>
+
+        <a
+          class="link-arrow"
+          href="{% url 'editar_livro' livro.pk %}"
+        >
+          Editar dados do livro ↗
+        </a>
+
+      </p>
+
+    {% endif %}
+
+  </div>
+
+</section>
+
+
+{% if perms.livro.view_exemplar %}
+
+<section class="panel">
+
+  <div class="section-title">
+
+    <div>
+
+      <span class="eyebrow">
+        CONTROLE DO ACERVO
+      </span>
+
+      <h2>
+        Exemplares
+      </h2>
+
+    </div>
+
+  </div>
+
+
+  <div class="table-wrap">
+
+    <table>
+
+      <thead>
+
+        <tr>
+          <th>Código</th>
+          <th>Situação</th>
+          <th>Ação</th>
+        </tr>
+
+      </thead>
+
+
+      <tbody>
+
+        {% for exemplar in exemplares %}
+
+          <tr>
+
+            <td>
+              <strong>
+                {{ exemplar.codigo }}
+              </strong>
+            </td>
+
+            <td>
+              {{ exemplar.get_status_display }}
+            </td>
+
+            <td>
+
+              {% if perms.livro.change_exemplar %}
+
+                {% if exemplar.status == 'disponivel' or exemplar.status == 'indisponivel' %}
+
+                  <form
+                    method="post"
+                    action="{% url 'alternar_exemplar' exemplar.pk %}"
+                  >
+
+                    {% csrf_token %}
+
+                    <button
+                      class="text-button"
+                      type="submit"
+                    >
+
+                      {% if exemplar.status == 'disponivel' %}
+                        Marcar indisponível
+                      {% else %}
+                        Disponibilizar
+                      {% endif %}
+
+                    </button>
+
+                  </form>
+
+                {% endif %}
+
+              {% endif %}
+
+            </td>
+
+          </tr>
+
+        {% empty %}
+
+          <tr>
+
+            <td colspan="3">
+              Nenhum exemplar cadastrado.
+            </td>
+
+          </tr>
+
+        {% endfor %}
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+
+  {% if perms.livro.add_exemplar %}
+
+    <form
+      class="inline-form"
+      method="post"
+      action="{% url 'novo_exemplar' livro.pk %}"
+    >
+
+      {% csrf_token %}
+
+      <div>
+
+        <label for="id_codigo">
+          Código do novo exemplar
+        </label>
+
+        {{ exemplar_form.codigo }}
+
+      </div>
+
+      <button
+        class="button secondary"
+        type="submit"
+      >
+        Adicionar exemplar
+      </button>
+
+    </form>
+
+  {% endif %}
+
+</section>
+
+{% endif %}
+
+{% endblock %}

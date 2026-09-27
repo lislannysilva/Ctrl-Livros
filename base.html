@@ -1,0 +1,110 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>
+    {% block titulo %}Biblioteca{% endblock %} · Biblioteca
+  </title>
+
+  <link rel="stylesheet" href="{% static 'app.css' %}">
+</head>
+
+<body>
+
+<a class="skip" href="#conteudo">
+  Pular para o conteúdo
+</a>
+
+<header class="topbar">
+
+  <a class="brand" href="{% url 'inicio' %}">
+    <span class="brand-icon" aria-hidden="true">B</span>
+    biblioteca<span class="brand-dot">.</span>
+  </a>
+
+  {% if user.is_authenticated %}
+
+  <nav aria-label="Menu principal">
+
+    <a href="{% url 'catalogo' %}">
+      Explorar acervo
+    </a>
+
+    <a href="{% url 'meus_emprestimos' %}">
+      Meus empréstimos
+    </a>
+
+    {% if perms.livro.gerenciar_circulacao %}
+      <a class="staff-link" href="{% url 'painel_bibliotecario' %}">
+        Área do bibliotecário ↗
+      </a>
+    {% endif %}
+
+  </nav>
+
+  <div class="account">
+
+    <span>
+      {{ user.first_name|default:user.username }}
+    </span>
+
+    <form method="post" action="{% url 'sair' %}">
+      {% csrf_token %}
+
+      <button class="text-button" type="submit">
+        Sair
+      </button>
+    </form>
+
+  </div>
+
+  {% else %}
+
+    <span class="top-note">
+      Histórias que passam de mão em mão.
+    </span>
+
+  {% endif %}
+
+</header>
+
+<main id="conteudo">
+
+  {% if messages %}
+
+    <div class="messages" aria-live="polite">
+
+      {% for message in messages %}
+
+        <div class="message {{ message.tags }}">
+          {{ message }}
+        </div>
+
+      {% endfor %}
+
+    </div>
+
+  {% endif %}
+
+  {% block conteudo %}{% endblock %}
+
+</main>
+
+<footer>
+
+  <span>
+    Biblioteca · Um lugar para descobrir.
+  </span>
+
+  <span>
+    Encontre. Reserve. Leia.
+  </span>
+
+</footer>
+
+</body>
+</html>

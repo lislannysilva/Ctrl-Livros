@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block titulo %}
+  Criar conta
+{% endblock %}
+
+{% block conteudo %}
+
+<div class="auth-layout">
+
+  <section class="auth-story">
+
+    <span class="eyebrow">
+      FAÇA PARTE DA BIBLIOTECA
+    </span>
+
+    <h1>
+      Seu próximo<br>
+      capítulo.
+    </h1>
+
+    <p>
+      Crie sua conta de leitor para explorar livros,
+      solicitar empréstimos e acompanhar cada leitura.
+    </p>
+
+
+    <div class="steps">
+
+      <p>
+        <b>01</b>
+        <span>
+          Encontre um livro no acervo.
+        </span>
+      </p>
+
+      <p>
+        <b>02</b>
+        <span>
+          Envie seu pedido de empréstimo.
+        </span>
+      </p>
+
+      <p>
+        <b>03</b>
+        <span>
+          Retire na biblioteca após a aprovação.
+        </span>
+      </p>
+
+    </div>
+
+  </section>
+
+
+  <section class="auth-card">
+
+    <span class="eyebrow">
+      CADASTRO DE LEITOR
+    </span>
+
+    <h2>
+      Vamos começar?
+    </h2>
+
+    <p class="muted">
+      Crie seu acesso para começar a explorar o acervo.
+    </p>
+
+
+    <form method="post" class="stack">
+
+      {% csrf_token %}
+
+      {{ form.as_p }}
+
+
+      <button
+        class="button full"
+        type="submit"
+      >
+        Criar minha conta
+        <span>→</span>
+      </button>
+
+    </form>
+
+
+    <p class="auth-switch">
+
+      Já tem conta?
+
+      <a href="{% url 'login' %}">
+        Entrar
+      </a>
+
+    </p>
+
+  </section>
+
+</div>
+
+{% endblock %}

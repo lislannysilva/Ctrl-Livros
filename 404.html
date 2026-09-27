@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block titulo %}
+  Página não encontrada
+{% endblock %}
+
+{% block conteudo %}
+
+<div class="empty">
+
+  <span class="eyebrow">
+    OPS...
+  </span>
+
+  <span class="empty-icon">
+    404
+  </span>
+
+  <h1>
+    Página não encontrada.
+  </h1>
+
+  <p>
+    Este endereço não está disponível.
+  </p>
+
+  <a
+    class="button"
+    href="{% url 'inicio' %}"
+  >
+    Voltar ao início
+  </a>
+
+</div>
+
+{% endblock %}

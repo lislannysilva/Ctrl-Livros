@@ -1,0 +1,251 @@
+{% extends 'base.html' %}
+
+{% block titulo %}
+  Explorar acervo
+{% endblock %}
+
+{% block conteudo %}
+
+<section class="page-heading">
+
+  <div>
+
+    <span class="eyebrow">
+      ÁREA DO LEITOR
+    </span>
+
+    <h1>
+      Encontre sua próxima leitura.
+    </h1>
+
+    <p>
+      Explore o acervo e solicite um exemplar para retirar na biblioteca.
+    </p>
+
+  </div>
+
+  <span class="count-note">
+    {{ total }} título{{ total|pluralize:"s" }} no acervo
+  </span>
+
+</section>
+
+
+<form method="get" class="search-panel">
+
+  <div class="search-field">
+
+    <label for="busca">
+      O que você quer ler?
+    </label>
+
+    <input
+      id="busca"
+      type="search"
+      name="q"
+      value="{{ busca }}"
+      placeholder="Busque por título, autor ou categoria"
+    >
+
+  </div>
+
+
+  <div>
+
+    <label for="categoria">
+      Categoria
+    </label>
+
+    <select id="categoria" name="categoria">
+
+      <option value="">
+        Todas as categorias
+      </option>
+
+      {% for categoria in categorias %}
+
+        <option
+          value="{{ categoria.pk }}"
+          {% if categoria_atual == categoria.pk|stringformat:"s" %}
+            selected
+          {% endif %}
+        >
+          {{ categoria.nome }}
+        </option>
+
+      {% endfor %}
+
+    </select>
+
+  </div>
+
+
+  <label class="check">
+
+    <input
+      type="checkbox"
+      name="disponivel"
+      value="1"
+      {% if request.GET.disponivel %}
+        checked
+      {% endif %}
+    >
+
+    Só disponíveis
+
+  </label>
+
+
+  <button class="button" type="submit">
+    Buscar
+  </button>
+
+</form>
+
+
+<div class="book-grid">
+
+  {% for livro in pagina %}
+
+    <article class="book-card">
+
+      <a
+        class="cover cover-{% cycle 'a' 'b' 'c' 'd' %}"
+        href="{% url 'detalhe_livro' livro.pk %}"
+        tabindex="-1"
+        aria-hidden="true"
+      >
+
+        <span>
+          {{ livro.categoria.nome }}
+        </span>
+
+        <strong>
+          {{ livro.nome }}
+        </strong>
+
+        <small>
+          {{ livro.autor }}
+        </small>
+
+        <i>
+          Biblioteca / Acervo
+        </i>
+
+      </a>
+
+
+      <div class="book-info">
+
+        <span class="badge {% if livro.disponiveis %}available{% else %}neutral{% endif %}">
+
+          {% if livro.disponiveis %}
+
+            {{ livro.disponiveis }}
+
+            {% if livro.disponiveis == 1 %}
+              disponível
+            {% else %}
+              disponíveis
+            {% endif %}
+
+          {% else %}
+
+            Sem exemplar disponível
+
+          {% endif %}
+
+        </span>
+
+
+        <h2>
+
+          <a href="{% url 'detalhe_livro' livro.pk %}">
+            {{ livro.nome }}
+          </a>
+
+        </h2>
+
+
+        <p>
+          {{ livro.autor }}
+        </p>
+
+
+        <a
+          class="link-arrow"
+          href="{% url 'detalhe_livro' livro.pk %}"
+        >
+
+          Ver livro
+
+          <span>↗</span>
+
+        </a>
+
+      </div>
+
+    </article>
+
+  {% empty %}
+
+    <div class="empty wide">
+
+      <span class="empty-icon" aria-hidden="true">
+        ⌕
+      </span>
+
+      <h2>
+
+        {% if busca or categoria_atual or request.GET.disponivel %}
+
+          Nenhum livro encontrado
+
+        {% else %}
+
+          Novas histórias em breve
+
+        {% endif %}
+
+      </h2>
+
+
+      <p>
+
+        {% if busca or categoria_atual or request.GET.disponivel %}
+
+          Experimente outro termo ou remova os filtros.
+
+        {% else %}
+
+          Os livros aparecerão aqui assim que forem cadastrados pela biblioteca.
+
+        {% endif %}
+
+      </p>
+
+
+      {% if perms.livro.add_livro %}
+
+        <a class="button" href="{% url 'novo_livro' %}">
+          Cadastrar primeiro livro
+        </a>
+
+      {% elif busca or categoria_atual or request.GET.disponivel %}
+
+        <a href="{% url 'catalogo' %}">
+          Limpar filtros
+        </a>
+
+      {% endif %}
+
+    </div>
+
+  {% endfor %}
+
+</div>
+
+
+{% include 'livro/paginacao.html' with pagina=pagina %}
+
+{% endblock %}

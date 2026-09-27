@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block titulo %}
+  Acesso restrito
+{% endblock %}
+
+{% block conteudo %}
+
+<div class="empty">
+
+  <span class="eyebrow">
+    ACESSO RESTRITO
+  </span>
+
+  <span class="empty-icon">
+    🔒
+  </span>
+
+  <h1>
+    Esta área é da equipe da biblioteca.
+  </h1>
+
+  <p>
+    Sua conta não tem permissão para executar esta ação.
+  </p>
+
+  <a
+    class="button"
+    href="{% url 'inicio' %}"
+  >
+    Voltar ao início
+  </a>
+
+</div>
+
+{% endblock %}

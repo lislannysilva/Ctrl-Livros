@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block titulo %}
+  Entrar
+{% endblock %}
+
+{% block conteudo %}
+
+<div class="auth-layout">
+
+  <section class="auth-story">
+
+    <span class="eyebrow">
+      SUA PRÓXIMA LEITURA COMEÇA AQUI
+    </span>
+
+    <h1>
+      Um livro abre<br>
+      muitos caminhos.
+    </h1>
+
+    <p>
+      Explore o acervo, peça seu próximo livro e acompanhe
+      seus empréstimos em um só lugar.
+    </p>
+
+
+    <div class="book-art" aria-hidden="true">
+
+      <div class="spine spine-a">
+        HISTÓRIAS
+      </div>
+
+      <div class="spine spine-b">
+        DESCOBERTAS
+      </div>
+
+      <div class="spine spine-c">
+        NOVOS OLHARES
+      </div>
+
+      <div class="book-flat"></div>
+
+    </div>
+
+
+    <div class="story-note">
+      <span>01 /</span>
+      Escolha sua próxima história.
+    </div>
+
+  </section>
+
+
+  <section class="auth-card">
+
+    <span class="eyebrow">
+      BEM-VINDO DE VOLTA
+    </span>
+
+    <h2>
+      Entre na biblioteca
+    </h2>
+
+    <p class="muted">
+      Leitores e bibliotecários entram por aqui.
+    </p>
+
+
+    <form method="post" class="stack">
+
+      {% csrf_token %}
+
+      {{ form.as_p }}
+
+      <input
+        type="hidden"
+        name="next"
+        value="{{ next }}"
+      >
+
+
+      <button
+        class="button full"
+        type="submit"
+      >
+        Entrar
+        <span>→</span>
+      </button>
+
+    </form>
+
+
+    <p class="auth-switch">
+
+      Ainda não tem conta?
+
+      <a href="{% url 'cadastro' %}">
+        Cadastre-se como leitor
+      </a>
+
+    </p>
+
+  </section>
+
+</div>
+
+{% endblock %}

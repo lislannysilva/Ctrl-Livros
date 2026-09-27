@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+
+{% block titulo %}
+  Meus empréstimos
+{% endblock %}
+
+{% block conteudo %}
+
+<section class="page-heading">
+
+  <div>
+
+    <span class="eyebrow">
+      ÁREA DO LEITOR
+    </span>
+
+    <h1>
+      Suas leituras, em dia.
+    </h1>
+
+    <p>
+      Acompanhe pedidos, retiradas e prazos de devolução.
+    </p>
+
+  </div>
+
+
+  <a
+    class="button secondary"
+    href="{% url 'catalogo' %}"
+  >
+    Explorar acervo ↗
+  </a>
+
+</section>
+
+
+<div class="request-list">
+
+  {% for pedido in pedidos %}
+
+    <article class="request-card">
+
+      <div class="request-main">
+
+        <span class="badge status-{{ pedido.status }}">
+          {{ pedido.get_status_display }}
+        </span>
+
+        <h2>
+          {{ pedido.livro.nome }}
+        </h2>
+
+        <p>
+          {{ pedido.livro.autor }}
+        </p>
+
+        <small>
+          Solicitado em
+          {{ pedido.criada_em|date:"d/m/Y H:i" }}
+        </small>
+
+      </div>
+
+
+      <div class="request-status">
+
+        {% if pedido.status == 'pendente' %}
+
+          <h3>
+            Aguardando análise
+          </h3>
+
+          <p>
+            O bibliotecário vai verificar seu pedido.
+          </p>
+
+
+        {% elif pedido.status == 'aprovada' %}
+
+          <h3>
+            Seu livro está reservado!
+          </h3>
+
+          <p>
+            Retire na biblioteca.
+            Exemplar {{ pedido.exemplar.codigo }}.
+          </p>
+
+
+        {% elif pedido.status == 'atendida' %}
+
+          <h3
+            class="{% if pedido.emprestimo.atrasado %}danger-text{% endif %}"
+          >
+
+            {% if pedido.emprestimo.atrasado %}
+              Devolução em atraso
+            {% else %}
+              Boa leitura!
+            {% endif %}
+
+          </h3>
+
+          <p>
+            Devolver até
+            <strong>
+              {{ pedido.emprestimo.prazo|date:"d/m/Y" }}
+            </strong>.
+          </p>
+
+          <small>
+            Retirado em
+            {{ pedido.emprestimo.retirada_em|date:"d/m/Y" }}
+          </small>
+
+
+        {% elif pedido.status == 'recusada' %}
+
+          <h3>
+            Pedido não aprovado
+          </h3>
+
+          <p>
+            {{ pedido.motivo }}
+          </p>
+
+
+        {% elif pedido.status == 'finalizada' %}
+
+          <h3>
+            Leitura concluída
+          </h3>
+
+          <p>
+            Devolvido em
+            {{ pedido.emprestimo.devolvido_em|date:"d/m/Y H:i" }}.
+          </p>
+
+
+        {% else %}
+
+          <h3>
+            Solicitação cancelada
+          </h3>
+
+          <p>
+            Você pode escolher outro livro no acervo.
+          </p>
+
+        {% endif %}
+
+
+        {% if pedido.status == 'pendente' or pedido.status == 'aprovada' %}
+
+          <form
+            method="post"
+            action="{% url 'cancelar' pedido.pk %}"
+          >
+
+            {% csrf_token %}
+
+            <button
+              class="text-button danger-text"
+              type="submit"
+            >
+              Cancelar solicitação
+            </button>
+
+          </form>
+
+        {% endif %}
+
+      </div>
+
+    </article>
+
+  {% empty %}
+
+    <div class="empty">
+
+      <span class="empty-icon">
+        📚
+      </span>
+
+      <h2>
+        Sua próxima leitura está no acervo.
+      </h2>
+
+      <p>
+        Você ainda não fez nenhum pedido de empréstimo.
+      </p>
+
+      <a
+        class="button"
+        href="{% url 'catalogo' %}"
+      >
+        Encontrar um livro →
+      </a>
+
+    </div>
+
+  {% endfor %}
+
+</div>
+
+
+{% include 'livro/paginacao.html' with pagina=pedidos %}
+
+{% endblock %}
